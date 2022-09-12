@@ -1,14 +1,15 @@
 import json
 from pprint import pprint
+from typing import Union
 
 from tweepy import StreamingClient, StreamRule
 
-from constants import EN_MYTH_TWITTER_ID, EN_VSINGER_TWITTER_ID, EN_COUNCIL_TWITTER_ID, EN_TEMPUS_TWITTER_ID
+from constants import EN_TWITTER_ID
+from database import save_to_db
 
 
 def create_rules() -> StreamRule:
-    twitter_ids = EN_MYTH_TWITTER_ID + EN_VSINGER_TWITTER_ID + EN_COUNCIL_TWITTER_ID + EN_TEMPUS_TWITTER_ID
-    rule_value = " OR ".join([f"from:{twitter_id}" for twitter_id in twitter_ids])
+    rule_value = " OR ".join([f"from:{twitter_id}" for twitter_id in EN_TWITTER_ID])
     return StreamRule(value=rule_value)
 
 
@@ -27,8 +28,10 @@ class HololiveStreamingClient(StreamingClient):
         self._add_rule()
         print("Stream connected! :)")
 
-    def on_data(self, raw_data) -> None:
-        pprint(json.loads(raw_data))
+    def on_data(self, raw_data: Union[str, bytes]) -> None:
+        data = json.loads(raw_data)
+        save_to_db(data=data)
+        pprint(data)
         print("\n")
 
     def on_exception(self, exception: Exception) -> None:
