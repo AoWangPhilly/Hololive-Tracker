@@ -1,9 +1,10 @@
-import os
+from decouple import config
 
-from constants import TWEET_FIELDS, EXPANSIONS, MEDIA_FIELDS, POLL_FIELDS, USER_FIELDS, PLACE_FIELDS
-from hololive_stream import HololiveStreamingClient
+from src.twitter_pipeline.constants import (TWEET_FIELDS, EXPANSIONS, MEDIA_FIELDS, POLL_FIELDS, USER_FIELDS,
+                                            PLACE_FIELDS)
+from src.twitter_pipeline.hololive_stream import HololiveStreamingClient
 
-BEARER_TOKEN = os.environ.get("bearer_token")
+BEARER_TOKEN = config("bearer_token")
 
 
 def main():
