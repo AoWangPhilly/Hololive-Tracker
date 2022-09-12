@@ -1,11 +1,13 @@
+import asyncio
 import json
 from pprint import pprint
 from typing import Union
 
 from tweepy import StreamingClient, StreamRule
 
-from constants import EN_TWITTER_ID
-from database import save_to_db
+from src.discord_bot.web_hook import send_message
+from src.twitter_pipeline.constants import EN_TWITTER_ID
+from src.twitter_pipeline.database import save_to_db
 
 
 def create_rules() -> StreamRule:
@@ -31,6 +33,7 @@ class HololiveStreamingClient(StreamingClient):
     def on_data(self, raw_data: Union[str, bytes]) -> None:
         data = json.loads(raw_data)
         save_to_db(data=data)
+        asyncio.run(send_message(data))
         pprint(data)
         print("\n")
 
