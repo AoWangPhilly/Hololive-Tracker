@@ -1,13 +1,22 @@
-import asyncio
+import datetime
 import json
+import logging
 from pprint import pprint
 from typing import Union
 
 from tweepy import StreamingClient, StreamRule
 
-from src.discord_bot.web_hook import send_message
 from src.twitter_pipeline.constants import EN_TWITTER_ID
 from src.twitter_pipeline.database import save_to_db
+from src.twitter_pipeline.disconnect_handler import StreamDisconnectHandler
+
+logging.basicConfig(
+    filename="twitter_stream.log",
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    filemode="w",
+)
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
 
 
 def create_rules() -> StreamRule:
@@ -16,6 +25,9 @@ def create_rules() -> StreamRule:
 
 
 class HololiveStreamingClient(StreamingClient):
+    def __init__(self, bearer_token, **kwargs):
+        super().__init__(bearer_token, **kwargs)
+        self.disconnect_handler = StreamDisconnectHandler()
 
     def _add_rule(self) -> None:
         rules = create_rules()
@@ -30,10 +42,14 @@ class HololiveStreamingClient(StreamingClient):
         self._add_rule()
         print("Stream connected! :)")
 
+        if self.disconnect_handler.connection_break_time:
+            self.disconnect_handler.connection_reconnect_time = datetime.datetime.now()
+            self.disconnect_handler.save_missing_tweets_to_db()
+            self.disconnect_handler.reset()
+
     def on_data(self, raw_data: Union[str, bytes]) -> None:
         data = json.loads(raw_data)
         save_to_db(data=data)
-        asyncio.run(send_message(data))
         pprint(data)
         print("\n")
 
@@ -43,6 +59,7 @@ class HololiveStreamingClient(StreamingClient):
 
     def on_connection_error(self) -> None:
         print("A streaming connection has occurred! Or stream has timed out!")
+        self.disconnect_handler.connection_break_time = datetime.datetime.now()
 
     def on_disconnect(self) -> None:
         self._delete_rule()
