@@ -53,6 +53,7 @@ class StreamDisconnectHandler:
         output = [{"data": data} for data in json_["data"]]
 
         while pagination_token := json_["meta"].get("next_token", None):
+            print(f"There's more!! Next pagination token is: {pagination_token}")
             params["pagination_token"] = pagination_token
             json_ = get_request(url=url, params=params)
             output.extend([{"data": data} for data in json_["data"]])
@@ -60,17 +61,24 @@ class StreamDisconnectHandler:
         return output
 
     def get_timeline_for_users(self, twitter_ids: List[int]) -> List[Dict]:
+        print("Retrieving Missing Tweets...")
+
         output = []
         for twitter_id in twitter_ids:
             output.extend(self.get_timeline_for_user(twitter_id=twitter_id))
+
+        print("Done!")
         return output
 
     def save_missing_tweets_to_db(self):
+        print("Saving missing tweets to database...")
         missing_tweets = self.get_timeline_for_users(twitter_ids=EN_TWITTER_ID)
         for tweet in missing_tweets:
             save_to_db(data=tweet)
+        print("Done!")
 
     def reset(self):
+        print("Resetting Handler! :-)")
         self.connection_reconnect_time = None
         self.connection_break_time = None
 
