@@ -1,4 +1,3 @@
-from pprint import pprint
 from typing import Dict, Sequence, Union
 
 import aiohttp
@@ -39,19 +38,23 @@ async def send_message(json_: Dict) -> None:
     async with aiohttp.ClientSession() as session:
         webhook = Webhook.from_url(config("twitter_webhook_url"), session=session)
         tweet_type, data = process_stream(json_)
-        embed = create_embed(tweet_type=tweet_type, info=data)
-        pprint(data)
         if tweet_type == "tweet":
+            embed = create_embed(tweet_type=tweet_type, info=data)
+
             await webhook.send(f'[Tweet](https://twitter.com/{data["username"]}/status/{data["tweet_id"]})',
                                embed=embed,
                                avatar_url=data["profile_image_url"], username=f"{data['name']} • Hololive-Tracker")
         elif tweet_type == "retweet":
+            embed = create_embed(tweet_type=tweet_type, info=data)
+
             await webhook.send(
                 f'[Retweeted @{data["username"]} ...](https://twitter.com/{data["retweeter_username"]}/status/{data["tweet_id"]})',
                 embed=embed,
                 avatar_url=data["retweeter_profile_image_url"], username=f"{data['retweeter_name']} • Hololive-Tracker")
 
         elif tweet_type == "quoted":
+            embed = create_embed(tweet_type=tweet_type, info=data)
+
             await webhook.send(
                 f'[Quoted @{data["quoted_username"]} ...](https://twitter.com/{data["username"]}/status/{data["tweet_id"]})',
                 embeds=embed,

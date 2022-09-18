@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Union, Any
 from typing import Tuple
 
 from decouple import config
@@ -12,7 +12,7 @@ bearer_token = config("bearer_token")
 client = Client(bearer_token=bearer_token)
 
 
-def process_stream(json_: Dict) -> Tuple[str, Dict]:
+def process_stream(json_: Dict) -> Tuple[str, Dict[str, Union[str, Any]]]:
     output = {}
     tweet_data = Tweet(json_["data"])
 
@@ -103,3 +103,4 @@ def process_stream(json_: Dict) -> Tuple[str, Dict]:
             output["quoted_image_url"] = media.url if media.url else media.preview_image_url
 
         return "quoted", output
+    return "none", output
