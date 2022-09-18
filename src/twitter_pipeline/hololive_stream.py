@@ -6,6 +6,7 @@ from typing import Union
 
 from tweepy import StreamingClient, StreamRule
 
+from src.discord_bot.web_hook import send_message
 from src.twitter_pipeline.constants import EN_TWITTER_ID
 from src.twitter_pipeline.database import save_to_db
 from src.twitter_pipeline.disconnect_handler import StreamDisconnectHandler
@@ -50,6 +51,7 @@ class HololiveStreamingClient(StreamingClient):
     def on_data(self, raw_data: Union[str, bytes]) -> None:
         data = json.loads(raw_data)
         save_to_db(data=data)
+        send_message(json_=data)
         pprint(data)
         print("\n")
 
