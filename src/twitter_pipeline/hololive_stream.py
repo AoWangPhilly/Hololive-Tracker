@@ -1,3 +1,4 @@
+import asyncio
 import datetime
 import json
 import logging
@@ -51,7 +52,7 @@ class HololiveStreamingClient(StreamingClient):
     def on_data(self, raw_data: Union[str, bytes]) -> None:
         data = json.loads(raw_data)
         save_to_db(data=data)
-        send_message(json_=data)
+        asyncio.run(send_message(json_=data))
         pprint(data)
         print("\n")
 
