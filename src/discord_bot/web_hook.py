@@ -41,7 +41,7 @@ async def send_message(json_: Dict) -> None:
         if tweet_type == "tweet":
             embed = create_embed(tweet_type=tweet_type, info=data)
 
-            await webhook.send(f'[Tweet](https://twitter.com/{data["username"]}/status/{data["tweet_id"]})',
+            await webhook.send(f'[Tweeted](https://twitter.com/{data["username"]}/status/{data["tweet_id"]})',
                                embed=embed,
                                avatar_url=data["profile_image_url"], username=f"{data['name']} • Hololive-Tracker")
         elif tweet_type == "retweet":
