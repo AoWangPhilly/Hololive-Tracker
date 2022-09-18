@@ -1,52 +1,58 @@
-import datetime
-import os
-from typing import Dict
+from pprint import pprint
+from typing import Dict, Sequence, Union
 
 import aiohttp
-from discord import Embed, Webhook
+from decouple import config
+from discord import Embed
+from discord import Webhook
+
+from src.discord_bot.stream_processor import process_stream
 
 
-def parse_stream_data(json_) -> Dict:
-    output = {}
-    data = json_["data"]
-    includes = json_["includes"]
-    output["created_at"] = data["created_at"]
-    output["text"] = data["text"]
-    output["author_id"] = data["author_id"]
-    output["conversation_id"] = data["conversation_id"]
-    for user in includes["users"]:
-        if user["id"] == output["author_id"]:
-            output["name"] = user["name"]
-            output["profile_image_url"] = user["profile_image_url"]
-            output["username"] = user["username"]
+def create_embed(tweet_type: str, info: Dict) -> Union[Embed, Sequence[Embed]]:
+    embed = Embed(description=info["text"], timestamp=info["created_at"])
+    embed.set_author(name=f"{info['name']} (@{info['username']})", url=info["profile_url"],
+                     icon_url=info["profile_image_url"])
+    embed.set_footer(text="Powered by Hololive-Tracker",
+                     icon_url="https://tweetshift.com/static/images/profile.png")
 
-    output["twitter_post_url"] = f"https://twitter.com/{output['username']}/status/{output['conversation_id']}"
-    if ref_tweet := data.get("referenced_tweets", None):
-        output["tweet_type"] = ref_tweet[0]["type"]
-    else:
-        output["tweet_type"] = "original"
-    return output
+    if image_url := info.get("image_url", None):
+        embed.set_image(url=image_url)
 
+    if tweet_type == "quoted":
+        quoted_embed = Embed(description=info["quoted_text"], timestamp=info["quoted_created_at"])
+        quoted_embed.set_author(name=f"{info['quoted_name']} (@{info['quoted_username']})",
+                                url=info["quoted_profile_url"],
+                                icon_url=info["quoted_profile_image_url"])
+        quoted_embed.set_footer(text="Powered by Hololive-Tracker",
+                                icon_url="https://tweetshift.com/static/images/profile.png")
 
-def create_embed(post_data: Dict) -> Embed:
-    name = f'{post_data["name"]} @({post_data["username"]})'
-    url = f'https://twitter.com/{post_data["username"]}'
-    icon_url = post_data["profile_image_url"]
-    description = post_data["text"]
-    date_posted = datetime.datetime.strptime(post_data["created_at"], "%Y-%m-%dT%H:%M:%S.%fZ")
-    footer_text = f"Powered by Hololive-Tracker • {date_posted.date()}"
+        if image_url := info.get("quoted_image_url", None):
+            quoted_embed.set_image(url=image_url)
 
-    embed = Embed(description=description)
-    embed.set_author(name=name, url=url, icon_url=icon_url)
-    embed.set_footer(text=footer_text, icon_url="hololive-logo.png")
+        return embed, quoted_embed
+
     return embed
 
 
-async def send_message(data: Dict) -> None:
+async def send_message(json_: Dict) -> None:
     async with aiohttp.ClientSession() as session:
-        webhook = Webhook.from_url(os.environ.get("twitter_webhook_url"), session=session)
-        data_ = parse_stream_data(data)
-        username = f'{data_["name"]} • Hololive-Tracker'
-        if data_["tweet_type"] == "original":
-            await webhook.send(f'[Tweeted]({data_["twitter_post_url"]})',
-                               embed=create_embed(post_data=data_), username=username)
+        webhook = Webhook.from_url(config("twitter_webhook_url"), session=session)
+        tweet_type, data = process_stream(json_)
+        embed = create_embed(tweet_type=tweet_type, info=data)
+        pprint(data)
+        if tweet_type == "tweet":
+            await webhook.send(f'[Tweet](https://twitter.com/{data["username"]}/status/{data["tweet_id"]})',
+                               embed=embed,
+                               avatar_url=data["profile_image_url"], username=f"{data['name']} • Hololive-Tracker")
+        elif tweet_type == "retweet":
+            await webhook.send(
+                f'[Retweeted @{data["username"]} ...](https://twitter.com/{data["retweeter_username"]}/status/{data["tweet_id"]})',
+                embed=embed,
+                avatar_url=data["retweeter_profile_image_url"], username=f"{data['retweeter_name']} • Hololive-Tracker")
+
+        elif tweet_type == "quoted":
+            await webhook.send(
+                f'[Quoted @{data["quoted_username"]} ...](https://twitter.com/{data["username"]}/status/{data["tweet_id"]})',
+                embeds=embed,
+                avatar_url=data["profile_image_url"], username=f"{data['name']} • Hololive-Tracker")
