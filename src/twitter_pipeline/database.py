@@ -16,8 +16,8 @@ SQLALCHEMY_DB_URL = f"postgresql://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOSTNAME}:{DB
 
 metadata_obj = MetaData()
 
-raw_twitter_data_stream = Table(
-    "raw_twitter_data_stream",
+raw_tweets = Table(
+    "raw_tweets",
     metadata_obj,
     Column("id", Integer, primary_key=True, nullable=False),
     Column("recorded_at", DateTime(timezone=True), server_default=func.now(), nullable=False),
@@ -28,7 +28,7 @@ engine = create_engine(SQLALCHEMY_DB_URL)
 
 
 def save_to_db(data: Dict) -> None:
-    ins = raw_twitter_data_stream.insert().values(data=data)
+    ins = raw_tweets.insert().values(data=data)
     conn = engine.connect()
     conn.execute(ins)
     conn.close()
