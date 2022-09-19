@@ -1,3 +1,6 @@
+"""
+Main runner for the Twitter Stream to get real-time Tweets with the Twitter API v2
+"""
 from decouple import config
 
 from src.twitter_pipeline.constants import (TWEET_FIELDS, EXPANSIONS, MEDIA_FIELDS, POLL_FIELDS, USER_FIELDS,
