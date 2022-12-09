@@ -1,5 +1,6 @@
 from decouple import config
-from sqlalchemy import MetaData, create_engine
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy_utils import database_exists, create_database
 
 DB_USERNAME = config("db_username")
@@ -10,9 +11,9 @@ DB_NAME = config("db_name")
 
 SQLALCHEMY_DB_URL = f"postgresql://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOSTNAME}:{DB_PORT}/{DB_NAME}"
 
-metadata_obj = MetaData()
-
 engine = create_engine(SQLALCHEMY_DB_URL)
+
+Base = declarative_base()
 
 
 def main() -> None:
@@ -20,8 +21,6 @@ def main() -> None:
         create_database(engine.url)
 
     print(f"{database_exists(engine.url)=}")
-
-    metadata_obj.create_all(engine)
 
 
 if __name__ == "__main__":
