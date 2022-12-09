@@ -4,8 +4,11 @@ from typing import List, Union
 
 import requests
 from decouple import config
+from sqlalchemy import insert
 
 from constants import USER_FIELDS, EN_TWITTER_ID
+from database import engine
+from models import RawMetric
 
 BASE_URL = "https://api.twitter.com/2/users"
 
@@ -28,7 +31,14 @@ class User:
             )
         return response.json()
 
+    def save_to_db(self):
+        data = self.call_endpoint()
+        query = insert(RawMetric).values(data=data)
+        conn = engine.connect()
+
+        conn.execute(query)
+
 
 if __name__ == "__main__":
     users = User(ids=EN_TWITTER_ID)
-    print(users.call_endpoint())
+    print(users.save_to_db())
