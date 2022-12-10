@@ -39,7 +39,7 @@ EN_MYTH_YOUTUBE_CHANNEL_ID = [
     "UCyl1z3jo3XHR1riLFKG5UAg",  # Watson Amelia
     "UCHsx4Hqa-1ORjQTh9TYDhww",  # Takanashi Kiara
     "UCL_qhgtOy0dy1Agp8vkySQg",  # Mori Calliope
-    "UCoSrY_IQQVpmIRZ9Xf-y93g"  # Gawr Gura
+    "UCoSrY_IQQVpmIRZ9Xf-y93g",  # Gawr Gura
     "UCMwGHR0BTZuLsmjY_NT5Pwg",  # Ninomae Ina'nis
 ]
 
