@@ -1,13 +1,11 @@
-# https://api.twitter.com/2/users?ids=1283653858510598144&user.fields=created_at,description,entities,id,location,name,pinned_tweet_id,profile_image_url,protected,public_metrics,url,username,verified,withheld
-
 from typing import List, Union, Dict
 
 import requests
 from decouple import config
 
-from constants import USER_FIELDS, EN_TWITTER_ID
-from database import Session
-from models import RawMetric
+from src.constants import USER_FIELDS, EN_TWITTER_ID
+from src.database import Session
+from src.models import RawMetric
 
 BASE_URL = "https://api.twitter.com/2/users"
 
@@ -41,4 +39,4 @@ class User:
 
 if __name__ == "__main__":
     users = User(ids=EN_TWITTER_ID)
-    users.save_to_db()
+    # users.save_to_db()
