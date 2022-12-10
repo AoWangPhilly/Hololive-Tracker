@@ -1,4 +1,4 @@
-from sqlalchemy import Integer, JSON, DateTime, func, Column, String, Numeric, UniqueConstraint
+from sqlalchemy import Integer, JSON, DateTime, func, Column, String, UniqueConstraint, ForeignKey
 
 from src.database import Base, engine
 
@@ -15,6 +15,7 @@ class CleansedTwitterMetric(Base):
     __tablename__ = "cleansed_twitter_metrics"
 
     id = Column(Integer, primary_key=True, nullable=False)
+    raw_json_id = Column(Integer, ForeignKey("raw_twitter_metrics.id", ondelete="CASCADE"), nullable=False)
     name = Column(String, nullable=False)
     username = Column(String, nullable=False)
     twitter_id = Column(String, nullable=False)
@@ -26,9 +27,8 @@ class CleansedTwitterMetric(Base):
     tweet_count = Column(Integer, nullable=False)
     profile_image_url = Column(String, nullable=False)
     youtube_channel_id = Column(String, nullable=False)
-    unix_id = Column(Numeric, nullable=False)
 
-    __table_args__ = (UniqueConstraint("twitter_id", "unix_id", name="_idol_metric"),)
+    __table_args__ = (UniqueConstraint("twitter_id", "raw_json_id", name="_twitter_idol_metric"),)
 
 
 class RawYouTubeMetric(Base):
@@ -43,6 +43,7 @@ class CleansedYouTubeMetric(Base):
     __tablename__ = "cleansed_youtube_metrics"
 
     id = Column(Integer, primary_key=True, nullable=False)
+    raw_json_id = Column(Integer, ForeignKey("raw_youtube_metrics.id", ondelete="CASCADE"), nullable=False)
     channel_id = Column(String, nullable=False)
     title = Column(String, nullable=False)
     description = Column(String, nullable=False)
@@ -52,9 +53,8 @@ class CleansedYouTubeMetric(Base):
     view_count = Column(Integer, nullable=False)
     subscriber_count = Column(Integer, nullable=False)
     video_count = Column(Integer, nullable=False)
-    unix_id = Column(Numeric, nullable=False)
 
-    __table_args__ = (UniqueConstraint("channel_id", "unix_id", name="_idol_metric"),)
+    __table_args__ = (UniqueConstraint("channel_id", "raw_json_id", name="_youtube_idol_metric"),)
 
 
 if __name__ == "__main__":
