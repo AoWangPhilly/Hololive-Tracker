@@ -1,7 +1,10 @@
 from typing import Dict, Any
 
+from src.database import Session
+from src.models import RawYouTubeMetric, CleansedYouTubeMetric, RawTwitterMetric
 
-def parser(data: Dict) -> Dict[str, Any]:
+
+def parse_data(data: Dict) -> Dict[str, Any]:
     items = data["items"][0]
     snippet = items["snippet"]
     statistics = items["statistics"]
@@ -19,9 +22,15 @@ def parser(data: Dict) -> Dict[str, Any]:
     }
 
 
-def save_to_db(data: Dict) -> None:
-    ...
+def save_to_db(row_data: RawTwitterMetric) -> None:
+    cleansed_metric = parse_data(row_data.data)
+    session = Session()
+    youtube_metric = CleansedYouTubeMetric(**cleansed_metric, raw_json_id=row_data.id)
+    session.add(youtube_metric)
+    session.commit()
 
 
 if __name__ == "__main__":
-    ...
+    session = Session()
+    result = session.query(RawYouTubeMetric).first()
+    save_to_db(result)
