@@ -2,8 +2,8 @@ from datetime import timezone
 from pprint import pprint
 from typing import Dict, Any, List
 
-import models
-from database import Session
+from src import models
+from src.database import Session
 
 
 def parse_data(user: Dict) -> Dict[str, Any]:
@@ -54,6 +54,6 @@ if __name__ == "__main__":
     session = Session()
 
     result = session.query(models.RawMetric).all()
-    save_to_db(result)
+    # save_to_db(result)
     # print(result[0].datetime)
     # pprint(parse_data(result[0].data["data"][0]))
