@@ -1,4 +1,3 @@
-from datetime import timezone
 from pprint import pprint
 from typing import Dict, Any, List
 
@@ -35,17 +34,15 @@ def parse_data(user: Dict) -> Dict[str, Any]:
     return output
 
 
-def save_to_db(row_data: List[models.RawMetric]) -> None:
+def save_to_db(row_data: List[models.RawTwitterMetric]) -> None:
     session = Session()
     for data in row_data:
-        datetime = data.datetime
-        unix_id = datetime.replace(tzinfo=timezone.utc).timestamp()
         metrics = data.data["data"]
+        raw_json_id = data.id
         for metric in metrics:
             cleansed_data = parse_data(user=metric)
-            cleansed_data["unix_id"] = unix_id
             pprint(cleansed_data)
-            cleansed_metric = models.CleansedMetric(**cleansed_data)
+            cleansed_metric = models.CleansedTwitterMetric(**cleansed_data, raw_json_id=raw_json_id)
             session.add(cleansed_metric)
             session.commit()
 
@@ -53,7 +50,7 @@ def save_to_db(row_data: List[models.RawMetric]) -> None:
 if __name__ == "__main__":
     session = Session()
 
-    result = session.query(models.RawMetric).all()
-    # save_to_db(result)
+    result = session.query(models.RawTwitterMetric).all()
+    save_to_db(result)
     # print(result[0].datetime)
     # pprint(parse_data(result[0].data["data"][0]))
