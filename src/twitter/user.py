@@ -3,14 +3,14 @@ from typing import List, Union, Dict
 import requests
 from decouple import config
 
+from src.api.base import API
 from src.constants import USER_FIELDS, EN_TWITTER_ID
-from src.database import Session
-from src.models import RawMetric
+from src.models import RawTwitterMetric
 
 BASE_URL = "https://api.twitter.com/2/users"
 
 
-class User:
+class User(API):
     def __init__(self, ids: Union[int, List[int]]) -> None:
         self.ids = ids
 
@@ -28,15 +28,7 @@ class User:
             )
         return response.json()
 
-    def save_to_db(self) -> None:
-        data = self.call_endpoint()
-        raw_metric = RawMetric(data=data)
-
-        session = Session()
-        session.add(raw_metric)
-        session.commit()
-
 
 if __name__ == "__main__":
     users = User(ids=EN_TWITTER_ID)
-    # users.save_to_db()
+    users.save_to_db(table=RawTwitterMetric)
