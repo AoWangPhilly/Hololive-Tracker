@@ -1,4 +1,3 @@
-from pprint import pprint
 from typing import Dict, Any, List
 
 from src import models
@@ -41,7 +40,7 @@ def save_to_db(row_data: List[models.RawTwitterMetric]) -> None:
         raw_json_id = data.id
         for metric in metrics:
             cleansed_data = parse_data(user=metric)
-            pprint(cleansed_data)
+            # pprint(cleansed_data)
             cleansed_metric = models.CleansedTwitterMetric(**cleansed_data, raw_json_id=raw_json_id)
             session.add(cleansed_metric)
             session.commit()

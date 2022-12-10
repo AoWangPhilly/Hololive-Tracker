@@ -1,6 +1,6 @@
 from sqlalchemy import Integer, JSON, DateTime, func, Column, String, UniqueConstraint, ForeignKey
 
-from src.database import Base, engine
+from src.database import Base
 
 
 class RawTwitterMetric(Base):
@@ -55,7 +55,3 @@ class CleansedYouTubeMetric(Base):
     video_count = Column(Integer, nullable=False)
 
     __table_args__ = (UniqueConstraint("channel_id", "raw_json_id", name="_youtube_idol_metric"),)
-
-
-if __name__ == "__main__":
-    Base.metadata.create_all(engine)
